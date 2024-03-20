@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>WebApi_Imaginemos.Helpers</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WebApi-Imaginemos-DTOs\WebApi-Imaginemos.DTOs.csproj" />
+    <ProjectReference Include="..\WebApi-Imaginemos.Entities\WebApi-Imaginemos.Entities.csproj" />
+  </ItemGroup>
+
+</Project>
