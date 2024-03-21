@@ -9,6 +9,7 @@ namespace WebApi_Imaginemos.Entities
         [ForeignKey("UsuarioId")]
         public int UsuarioId { get; set; }
         public Usuario Usuario { get; set; }
+        [Column(TypeName = "date")]
         public DateTime Fecha { get; set; }
         public decimal Total { get; set; }
     }

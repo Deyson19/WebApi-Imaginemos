@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 //connecion string
 var connectionString = builder.Configuration.GetConnectionString("Postgres");
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 //database
 builder.Services.AddDbContext<ImaginemosDbContext>(op =>
@@ -23,6 +24,7 @@ builder.Services.AddAutoMapper(typeof(Program), typeof(AutoMapperProfile));
 //services
 builder.Services.AddScoped<IUsuariosService, UsuariosService>();
 builder.Services.AddScoped<IVentasService, VentasService>();
+builder.Services.AddScoped<IDetalleVentasService, DetalleVentasService>();
 builder.Services.AddScoped<IProductosService, ProductosService>();
 
 
