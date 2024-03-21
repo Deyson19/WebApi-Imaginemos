@@ -8,4 +8,10 @@
         public decimal Precio { get; set; }
         public string Descripcion { get; set; }
     }
+    public class ProductoDto_Crear
+    {
+        public string Nombre { get; set; }
+        public decimal Precio { get; set; }
+        public string Descripcion { get; set; }
+    }
 }
