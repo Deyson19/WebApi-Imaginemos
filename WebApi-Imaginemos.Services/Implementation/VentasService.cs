@@ -10,53 +10,86 @@ namespace WebApi_Imaginemos.Services.Implementation
     public class VentasService(ImaginemosDbContext dbContext) : IVentasService
     {
         private readonly ImaginemosDbContext _dbContext = dbContext;
-
-        public async Task<ResponseDto<Venta_Detalle_Usuario>> Add(RegistrarVenta newSale)
+        //gestionar el usuario si existe o se ha creado uno nuevo
+        Usuario currentUser = new();
+        public async Task<ResponseDto<VentaDetalleUsuario>> Add(RegistrarVenta newSale)
         {
-            //obtener todos los productos actuales para poder navegar hacia su precio
-            var productsList = await _dbContext.Producto.ToListAsync();
-            //obtener informacion del usuario
-            var userInfo = await _dbContext.Usuario.FirstOrDefaultAsync(x => x.Id == newSale.UsuarioId);
+
             //crear objetos para asignar luego de guardar los datos y armar posteriormente la respuesta
             var detalleVenta = new DetalleVenta();
             var ventaUnica = new Venta();
 
+            decimal totalVentaResponse = 0;
+            //obtener todos los productos actuales para poder navegar hacia su precio
+            var productsList = await _dbContext.Producto.ToListAsync();
+
+            //obtener usuario por el dni para evitar duplicidad
+            var user = await _dbContext.Usuario.FirstOrDefaultAsync(x => x.DNI.ToLower() == newSale.DNI.ToLower());
+
+
+            //guardar el nuevo usuario que viene si no existe al realizar la venta 
+            if (user is null)
+            {
+                var newUser = new Usuario
+                {
+                    DNI = newSale.DNI,
+                    Nombre = newSale.Usuario
+                };
+                await _dbContext.Usuario.AddAsync(newUser);
+                await _dbContext.SaveChangesAsync();
+                //crea el usuario y se asignan a la instancia ya creada para acceder a los valores para la venta
+                currentUser = newUser;
+            }
+            else
+            {
+                currentUser = user;
+
+            }
+            int productsCounter = newSale.Productos.Count();
+            
             foreach (var items in newSale.Productos)
             {
                 var productSelected = productsList.Where(x => x.Id == items.ProductoId).SingleOrDefault();
-                var singleSale = new Venta
+                decimal totalVenta = productSelected!.Precio * items.Cantidad;
+
+                //asignar el id al usuario creado o existente
+                ventaUnica.UsuarioId = currentUser!.Id;
+                //guardar la venta realizada
+                ventaUnica.Total = totalVenta;
+                ventaUnica = await SaveSale(ventaUnica);
+                
+
+                totalVentaResponse += ventaUnica.Total;
+
+                //guardar detalles de la venta
+                detalleVenta.ProductoId = productSelected.Id;
+                detalleVenta.PrecioUnitario = productSelected.Precio;
+                detalleVenta.Cantidad = items.Cantidad;
+                detalleVenta.VentaId = ventaUnica.Id;
+                detalleVenta.Total = ventaUnica.Total;
+                detalleVenta = await SaveDetailsSale(detalleVenta);
+
+                productsCounter--;
+                //restablecer el ventaUnica y limpiar los datos
+                if (productsCounter >=1)
                 {
-                    UsuarioId = newSale.UsuarioId,
-                    Total = productSelected.Precio * items.Cantidad
-                };
-                var addSale = await _dbContext.Venta.AddAsync(singleSale);
-
-
-                var saleDetails = new DetalleVenta
-                {
-                    ProductoId = productSelected.Id,
-                    VentaId = addSale.Entity.Id,
-                    Total = singleSale.Total,
-                    PrecioUnitario = productSelected.Precio
-                };
-                await _dbContext.DetalleDeVenta.AddAsync(saleDetails);
-
-                //asignar los valores para armar la respuesta de la tarea
-                ventaUnica = singleSale;
-                detalleVenta = saleDetails;
+                    ventaUnica = new Venta();
+                    detalleVenta = new DetalleVenta();
+                }
+                
             }
-            await _dbContext.SaveChangesAsync();
-            return new ResponseDto<Venta_Detalle_Usuario>
+
+            return new ResponseDto<VentaDetalleUsuario>
             {
                 IsSuccess = true,
-                Modelo = new Venta_Detalle_Usuario
+                Modelo = new VentaDetalleUsuario
                 {
                     Id = detalleVenta.Id,
                     VentaDetalleId = detalleVenta.Id,
-                    UsuarioId = ventaUnica.UsuarioId,
-                    NombreUsuario = userInfo!.Nombre,
+                    UsuarioId = currentUser.Id,
+                    NombreUsuario = newSale.Usuario,
                     Fecha = DateTime.Now,
-                    Total = detalleVenta.Total
+                    Total = totalVentaResponse,
                 }
             };
         }
@@ -94,16 +127,16 @@ namespace WebApi_Imaginemos.Services.Implementation
             };
         }
 
-        public async Task<ResponseDto<List<Venta>>> Search(DateTime initialDate, DateTime endDate, string? name, string? dni)
+        public async Task<ResponseDto<List<Venta>>> Search(DateTime initialDate, DateTime endDate, string name, string dni)
         {
             var searchSale = await _dbContext.Venta.Include(z => z.Usuario).Where(
                 x => x.Fecha >= initialDate && x.Fecha <= endDate
-                || x.Usuario.Nombre.Contains(name) || x.Usuario.DNI.Contains(dni)
+                || x.Usuario.Nombre.ToLower().Contains(name.ToLower()) || x.Usuario.DNI.ToLower().Contains(dni.ToLower())
                 ).ToListAsync();
             return new ResponseDto<List<Venta>>
             {
                 IsSuccess = searchSale != null,
-                Modelo = searchSale
+                Modelo = searchSale!
             };
         }
 
@@ -134,7 +167,23 @@ namespace WebApi_Imaginemos.Services.Implementation
 
         private async Task<Venta> GetSale(int id)
         {
-            return await _dbContext.Venta.FirstOrDefaultAsync(x => x.Id == id);
+            return await _dbContext.Venta.Include(x => x.Usuario).FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        private async Task<Venta> SaveSale(Venta venta)
+        {
+            var newItem = await _dbContext.Venta.AddAsync(venta);
+            await _dbContext.SaveChangesAsync();
+
+            return newItem.Entity;
+        }
+
+        private async Task<DetalleVenta> SaveDetailsSale(DetalleVenta detalleVenta)
+        {
+            var newItem = await _dbContext.DetalleDeVenta.AddAsync(detalleVenta);
+            await _dbContext.SaveChangesAsync();
+
+            return newItem.Entity;
         }
     }
 }

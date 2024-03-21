@@ -10,7 +10,7 @@ namespace WebApi_Imaginemos.Services.Contract
         Task<ResponseDto<IEnumerable<Venta>>> GetAll();
         Task<ResponseDto<Venta>> GetById(int id);
         Task<ResponseDto<List<Venta>>> Search(DateTime initialDate, DateTime endDate, string? name, string? dni);
-        Task<ResponseDto<Venta_Detalle_Usuario>> Add(RegistrarVenta newSale);
+        Task<ResponseDto<VentaDetalleUsuario>> Add(RegistrarVenta newSale);
         Task<ResponseDto<Venta>> Update(VentaUsuarioDto updateSale);
         Task<ResponseDto<bool>> Delete(int id);
     }
