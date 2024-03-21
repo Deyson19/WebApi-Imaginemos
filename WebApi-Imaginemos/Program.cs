@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using WebApi_Imaginemos.DataAccess;
 using WebApi_Imaginemos.Helpers;
+using WebApi_Imaginemos.Services.Contract;
+using WebApi_Imaginemos.Services.Implementation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,10 @@ builder.Services.AddDbContext<ImaginemosDbContext>(op =>
 //automapper
 builder.Services.AddAutoMapper(typeof(Program), typeof(AutoMapperProfile));
 
+//services
+builder.Services.AddScoped<IUsuariosService, UsuariosService>();
+builder.Services.AddScoped<IVentasService, VentasService>();
+builder.Services.AddScoped<IProductosService, ProductosService>();
 
 
 // Add services to the container.

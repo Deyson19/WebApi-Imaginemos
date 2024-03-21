@@ -1,6 +1,6 @@
 @WebApi_Imaginemos_HostAddress = http://localhost:5039
 
-GET {{WebApi_Imaginemos_HostAddress}}/weatherforecast/
+GET {{WebApi_Imaginemos_HostAddress}}/productos/
 Accept: application/json
 
 ###

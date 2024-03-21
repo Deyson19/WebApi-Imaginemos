@@ -7,7 +7,7 @@ using WebApi_Imaginemos_DTOs;
 
 namespace WebApi_Imaginemos.Services.Implementation
 {
-    public class VentaService(ImaginemosDbContext dbContext) : IVentasService
+    public class VentasService(ImaginemosDbContext dbContext) : IVentasService
     {
         private readonly ImaginemosDbContext _dbContext = dbContext;
 
