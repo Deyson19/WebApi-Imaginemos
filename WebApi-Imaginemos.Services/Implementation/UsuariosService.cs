@@ -79,7 +79,9 @@ namespace WebApi_Imaginemos.Services.Implementation
 
             if (!string.IsNullOrWhiteSpace(name) || !string.IsNullOrWhiteSpace(dni))
             {
-                var findUsers = await _dbContext.Usuario.Where(x => x.Nombre.Contains(name) || x.DNI.Contains(dni)).ToListAsync();
+                var findUsers = await _dbContext.Usuario.Where(
+                    x => x.Nombre.ToLower().Contains(name.ToLower()) || x.DNI.ToLower().Contains(dni.ToLower())
+                    ).ToListAsync();
                 if (findUsers.Any())
                 {
                     user = findUsers;
