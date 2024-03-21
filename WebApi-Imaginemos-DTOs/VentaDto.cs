@@ -19,10 +19,11 @@
     public class RegistrarVenta
     {
 
-        public int UsuarioId { get; set; } //usuario id en los modelos se crea como entero, y nombre como string
+        public string Usuario { get; set; }
         public string DNI { get; set; }
         public List<VentaProducto> Productos { get; set; }
     }
+
     public class VentaProducto
     {
         public int ProductoId { get; set; }
