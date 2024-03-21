@@ -8,11 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Contract\" />
-    <Folder Include="Implementation\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\WebApi-Imaginemos-DTOs\WebApi-Imaginemos.DTOs.csproj" />
     <ProjectReference Include="..\WebApi-Imaginemos.DataAccess\WebApi-Imaginemos.DataAccess.csproj" />
     <ProjectReference Include="..\WebApi-Imaginemos.Entities\WebApi-Imaginemos.Entities.csproj" />
