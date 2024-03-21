@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WebApi_Imaginemos.DataAccess;
@@ -11,9 +12,11 @@ using WebApi_Imaginemos.DataAccess;
 namespace WebApi_Imaginemos.DataAccess.Migrations
 {
     [DbContext(typeof(ImaginemosDbContext))]
-    partial class ImaginemosDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240320230314_TB_Producto_Modificada")]
+    partial class TB_Producto_Modificada
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
