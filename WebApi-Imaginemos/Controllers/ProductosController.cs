@@ -12,7 +12,7 @@ namespace WebApi_Imaginemos.Controllers
     {
         private readonly IProductosService _productosService = productoService;
         private readonly IMapper _mapper = mapper;
-        private readonly string baseUrl = "https://localhost:7167";
+        private readonly string baseUrl = Helper.baseUrl;
 
         [HttpGet]
         public async Task<IActionResult> GetProducts(string name)

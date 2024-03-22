@@ -127,7 +127,8 @@ namespace WebApi_Imaginemos.Services.Implementation
 
         public async Task<ResponseDto<IEnumerable<Venta>>> GetAll()
         {
-            var sales = await _dbContext.Venta.ToListAsync();
+            var sales = await _dbContext.Venta.Include(x=>x.Usuario).ToListAsync();
+            
 
             return new ResponseDto<IEnumerable<Venta>> { IsSuccess = sales.Any(), Modelo = sales };
         }

@@ -12,7 +12,7 @@ namespace WebApi_Imaginemos.Services.Implementation
 
         public async Task<ResponseDto<DetalleVenta>> Add(DetalleVenta newDetail)
         {
-            if (newDetail != null)
+            if (newDetail.ProductoId != 0 && newDetail.Cantidad != 0)
             {
                 var saveDetail = _dbContext.DetalleDeVenta.Add(newDetail);
                 await _dbContext.SaveChangesAsync();
@@ -32,22 +32,43 @@ namespace WebApi_Imaginemos.Services.Implementation
 
         public async Task<ResponseDto<bool>> Delete(int id)
         {
-            var findDetail = await DetalleVenta(id);
-            if (findDetail != null)
+            if (id !=0)
             {
-                _dbContext.DetalleDeVenta.Remove(findDetail);
-                await _dbContext.SaveChangesAsync();
+                var findDetail = await DetalleVenta(id);
+                if (findDetail != null)
+                {
+                    _dbContext.DetalleDeVenta.Remove(findDetail);
+                    await _dbContext.SaveChangesAsync();
+                }
             }
             return new ResponseDto<bool>
             {
-                IsSuccess = findDetail != null,
-                Modelo = findDetail != null
+                IsSuccess = false,
+                Modelo = false
             };
         }
 
         public async Task<ResponseDto<IEnumerable<DetalleVenta>>> GetAll(int ventaId)
         {
-            var salesDetails = await _dbContext.DetalleDeVenta.Where(x => x.VentaId == ventaId).ToListAsync();
+            if (ventaId !=0)
+            {
+                var salesDetails = await _dbContext.DetalleDeVenta.Where(x => x.VentaId == ventaId).ToListAsync();
+                return new ResponseDto<IEnumerable<DetalleVenta>>
+                {
+                    IsSuccess = salesDetails.Count != 0,
+                    Modelo = salesDetails
+                };
+            }
+            return new ResponseDto<IEnumerable<DetalleVenta>>
+            {
+                IsSuccess = false,
+                Modelo = new List<DetalleVenta>()
+            };
+        }
+
+        public async Task<ResponseDto<IEnumerable<DetalleVenta>>> GetAll()
+        {
+            var salesDetails = await _dbContext.DetalleDeVenta.Include(x=>x.Venta).ThenInclude(x=>x.Usuario).Include(x=>x.Producto).ToListAsync();
             return new ResponseDto<IEnumerable<DetalleVenta>>
             {
                 IsSuccess = salesDetails.Count != 0,
@@ -57,10 +78,18 @@ namespace WebApi_Imaginemos.Services.Implementation
 
         public async Task<ResponseDto<DetalleVenta>> GetById(int id)
         {
+            if (id != 0)
+            {
+                return new ResponseDto<DetalleVenta>
+                {
+                    IsSuccess = await DetalleVenta(id) != null,
+                    Modelo = await DetalleVenta(id)
+                };
+            }
             return new ResponseDto<DetalleVenta>
             {
-                IsSuccess = await DetalleVenta(id) != null,
-                Modelo = await DetalleVenta(id)
+                IsSuccess =false,
+                Modelo = new DetalleVenta()
             };
         }
 

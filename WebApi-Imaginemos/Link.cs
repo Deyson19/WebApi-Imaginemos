@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace WebApi_Imaginemos
 {
     public class Link
@@ -10,5 +5,10 @@ namespace WebApi_Imaginemos
         public string? Href { get; set; }
         public string? Rel { get; set; }
         public string? Title { get; set; }
+    }
+
+    public static class Helper
+    {
+        public static string baseUrl = "https://localhost:7167";
     }
 }
