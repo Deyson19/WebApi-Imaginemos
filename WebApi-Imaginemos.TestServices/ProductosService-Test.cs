@@ -83,7 +83,7 @@ namespace WebApi_Imaginemos.TestServices
         {
             //id debe existir  en la tabla de productos
             // Arrange
-            int id = 36;
+            int id = 38;
             // Act
             var response = await _productosService.Delete(id);
 

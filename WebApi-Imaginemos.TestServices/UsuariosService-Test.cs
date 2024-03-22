@@ -86,7 +86,7 @@ namespace WebApi_Imaginemos.TestServices
         {
             //el id debe existir en la tabla
             // Arrange
-            int id = 4;
+            int id = 7;
 
             // Act
             var response = await _usuariosService.Delete(id);
@@ -164,7 +164,7 @@ namespace WebApi_Imaginemos.TestServices
             // Arrange
             var updateUser = new Usuario
             {
-                Id = 26,
+                Id = 22,
                 Nombre = "Wilma Rabat",
                 DNI = "396-83-3666"
             };

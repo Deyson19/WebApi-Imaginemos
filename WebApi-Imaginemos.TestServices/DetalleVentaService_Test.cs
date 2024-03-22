@@ -54,7 +54,7 @@ namespace WebApi_Imaginemos.TestServices
         {
             //el id debe existir en la tabla
             // Arrange
-            int id = 5;
+            int id = 8;
 
             // Act
             var response = await _detalleVentasService.Delete(id);
@@ -68,7 +68,7 @@ namespace WebApi_Imaginemos.TestServices
         public async Task Delete_NotExistDetalleVenta_ReturnsFail()
         {
             // Arrange
-            int id = 5;
+            int id = 7;
             // Act
             var response = await _detalleVentasService.Delete(id);
 
@@ -109,7 +109,7 @@ namespace WebApi_Imaginemos.TestServices
             // Arrange
             var updateDetalleVenta = new DetalleVenta
             {
-                Id = 37,
+                Id = 36,
                 ProductoId = 8,
                 VentaId = 36,
                 PrecioUnitario = 30,
