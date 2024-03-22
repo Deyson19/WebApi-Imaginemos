@@ -12,12 +12,21 @@ namespace WebApi_Imaginemos.Services.Implementation
 
         public async Task<ResponseDto<DetalleVenta>> Add(DetalleVenta newDetail)
         {
-            var saveDetail = _dbContext.DetalleDeVenta.Add(newDetail);
-            await _dbContext.SaveChangesAsync();
+            if (newDetail != null)
+            {
+                var saveDetail = _dbContext.DetalleDeVenta.Add(newDetail);
+                await _dbContext.SaveChangesAsync();
+                return new ResponseDto<DetalleVenta>
+                {
+                    IsSuccess = true,
+                    Modelo = saveDetail.Entity
+                };
+            }
+
             return new ResponseDto<DetalleVenta>
             {
-                IsSuccess = saveDetail.Entity != null,
-                Modelo = saveDetail.Entity
+                IsSuccess = false,
+                Modelo = newDetail
             };
         }
 
@@ -38,7 +47,7 @@ namespace WebApi_Imaginemos.Services.Implementation
 
         public async Task<ResponseDto<IEnumerable<DetalleVenta>>> GetAll(int ventaId)
         {
-            var salesDetails = await _dbContext.DetalleDeVenta.Where(x=>x.VentaId == ventaId).ToListAsync();
+            var salesDetails = await _dbContext.DetalleDeVenta.Where(x => x.VentaId == ventaId).ToListAsync();
             return new ResponseDto<IEnumerable<DetalleVenta>>
             {
                 IsSuccess = salesDetails.Count != 0,
@@ -60,12 +69,18 @@ namespace WebApi_Imaginemos.Services.Implementation
             var findDetail = await DetalleVenta(update.Id);
             if (findDetail != null)
             {
-                _dbContext.DetalleDeVenta.Update(update);
+                findDetail.PrecioUnitario = update.PrecioUnitario;
+                findDetail.Cantidad = update.Cantidad;
+                findDetail.Total = update.Total;
+                findDetail.VentaId = update.VentaId;
+                findDetail.ProductoId = update.ProductoId;
+
+                _dbContext.DetalleDeVenta.Update(findDetail);
                 await _dbContext.SaveChangesAsync();
             }
             return new ResponseDto<DetalleVenta>
             {
-                IsSuccess = findDetail != null && update != null,
+                IsSuccess = findDetail != null,
                 Modelo = update
             };
         }

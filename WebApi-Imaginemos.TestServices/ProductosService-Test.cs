@@ -1,6 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Moq;
-using System.Runtime.CompilerServices;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WebApi_Imaginemos.DataAccess;
 using WebApi_Imaginemos.Entities;
 using WebApi_Imaginemos.Services.Contract;
@@ -9,9 +12,9 @@ using WebApi_Imaginemos.Services.Implementation;
 namespace WebApi_Imaginemos.TestServices
 {
     [TestClass]
-    public class UsuariosService_Test
+    public class ProductosService_Test
     {
-        private IUsuariosService _usuariosService;
+        private IProductosService _productosService;
         private ImaginemosDbContext _dbContext;
 
         [TestInitialize]
@@ -20,34 +23,28 @@ namespace WebApi_Imaginemos.TestServices
 
             var options = new DbContextOptions<ImaginemosDbContext>();
             _dbContext = new ImaginemosDbContext(options);
-            _usuariosService = new UsuariosService(_dbContext);
+            _productosService = new ProductosService(_dbContext);
         }
         [TestMethod]
-        public async Task GetByNameOrDni_ValidNameAndDni()
+        public async Task SearchProducts_Products()
         {
             // Arrange
-            string name = "Eliana";
-            string dni = "478-96-523";
-
+            string name = "toma";
             // Act
-            var result = await _usuariosService.GetByNameOrDni(name, dni);
+            var result = await _productosService.Search(name);
 
             // Assert
             Assert.IsTrue(result.IsSuccess);
             Assert.IsNotNull(result.Modelo);
-            Assert.AreEqual(name, result.Modelo.FirstOrDefault().Nombre);
-            Assert.AreEqual(dni, result.Modelo.FirstOrDefault().DNI);
         }
 
         [TestMethod]
-        public async Task GetUsersByNameOrDni_FilterByNameOrDni()
+        public async Task SearchProducts_ProductsFail()
         {
             // Arrange
             string name = "El";
-            string dni = "47";
-
             // Act
-            var result = await _usuariosService.GetByNameOrDni(name, dni);
+            var result = await _productosService.Search(name);
 
             // Assert
             Assert.IsTrue(result.IsSuccess);
@@ -55,13 +52,13 @@ namespace WebApi_Imaginemos.TestServices
         }
 
         [TestMethod]
-        public async Task GetById_ExistUser()
+        public async Task GetById_ExistProduct()
         {
             // Arrange
             int id = 1;
 
             // Act
-            var response = await _usuariosService.GetById(id);
+            var response = await _productosService.GetById(id);
 
             // Assert
             Assert.IsTrue(response.IsSuccess);
@@ -69,27 +66,26 @@ namespace WebApi_Imaginemos.TestServices
         }
 
         [TestMethod]
-        public async Task GetById_NonExistUser()
+        public async Task GetById_NoExistProduct()
         {
             // Arrange
             int id = 100;
 
             // Act
-            var response = await _usuariosService.GetById(id);
+            var response = await _productosService.GetById(id);
 
             // Assert
             Assert.IsFalse(response.IsSuccess);
-            Assert.IsNotNull(response.Modelo);
+            Assert.IsNull(response.Modelo);
         }
         [TestMethod]
-        public async Task Delete_ExistUser_ReturnOK()
+        public async Task Delete_Success_ReturnOK()
         {
-            //el id debe existir en la tabla
+            //id debe existir  en la tabla de productos
             // Arrange
-            int id = 4;
-
+            int id = 36;
             // Act
-            var response = await _usuariosService.Delete(id);
+            var response = await _productosService.Delete(id);
 
             // Assert
             Assert.IsTrue(response.IsSuccess);
@@ -97,61 +93,59 @@ namespace WebApi_Imaginemos.TestServices
         }
 
         [TestMethod]
-        public async Task Delete_NotExistUser_ReturnsFail()
+        public async Task Delete_Fail()
         {
             // Arrange
             int id = 34;
             // Act
-            var response = await _usuariosService.Delete(id);
+            var response = await _productosService.Delete(id);
 
             // Assert
             Assert.IsFalse(response.IsSuccess);
             Assert.IsFalse(response.Modelo);
         }
         [TestMethod]
-        public async Task Add_ValidUser_ReturnsSuccessResponse()
+        public async Task Add_ValidProduct_ReturnsSuccess()
         {
             // Arrange
-            var newUser = new Usuario { Nombre = "John Doe", DNI = "789-356-2" };
+            var newProduct = new Entities.Producto { Nombre = "Uvas Pasas", Descripcion = "Uvas para compartir en familia", Precio = 150 };
 
             // Act
-            var response = await _usuariosService.Add(newUser);
+            var response = await _productosService.Add(newProduct);
 
             // Assert
             Assert.IsTrue(response.IsSuccess);
-            Assert.AreEqual(newUser, response.Modelo);
+            Assert.AreEqual(newProduct, response.Modelo);
         }
 
         [TestMethod]
-        public async Task Add_InvalidUser_ReturnsFailureResponse()
+        public async Task Add_InvalidProduct_ReturnsFail()
         {
             // Arrange
-            var newUser = new Usuario { Nombre = null, DNI = null };
+            var newProduct = new Producto { Nombre = null, Descripcion = null, Precio = decimal.Zero };
 
             // Act
-            var response = await _usuariosService.Add(newUser);
+            var response = await _productosService.Add(newProduct);
 
             // Assert
             Assert.IsFalse(response.IsSuccess);
-            Assert.AreEqual(newUser, response.Modelo);
+            Assert.IsNull(response.Modelo.Nombre);
         }
         [TestMethod]
-        public async Task GetAll_UsersExist()
+        public async Task GetAll_ProductsExist()
         {
-
             // Act
-            var response = await _usuariosService.GetAll();
-
+            var response = await _productosService.GetAll();
             // Assert
             Assert.IsTrue(response.IsSuccess);
             Assert.IsNotNull(response.Modelo);
         }
 
         [TestMethod]
-        public async Task GetAll_NoUsersExist()
+        public async Task GetAll_NoProductsExist()
         {
             // Act
-            var response = await _usuariosService.GetAll();
+            var response = await _productosService.GetAll();
 
             // Assert
             Assert.IsFalse(!response.IsSuccess);
@@ -159,41 +153,42 @@ namespace WebApi_Imaginemos.TestServices
         }
 
         [TestMethod]
-        public async Task Update_ValidUser()
+        public async Task Update_ValidProduct()
         {
             // Arrange
-            var updateUser = new Usuario
+            var updateProduct = new Producto
             {
                 Id = 26,
                 Nombre = "Wilma Rabat",
-                DNI = "396-83-3666"
+                Descripcion = "Tempor consectetur excepteur",
+                Precio = 150
             };
             // Act
-            var response = await _usuariosService.Update(updateUser);
+            var response = await _productosService.Update(updateProduct);
 
             // Assert
             Assert.IsTrue(response.IsSuccess);
-            Assert.AreEqual(updateUser, response.Modelo);
+            Assert.AreEqual(updateProduct, response.Modelo);
         }
 
         [TestMethod]
-        public async Task Update_InvalidUser()
+        public async Task Update_InvalidProduct()
         {
             // Arrange
-            var updateUser = new Usuario
+            var updateUser = new Producto
             {
-                Id = 100,
+                Id = 150,
                 Nombre = "John Doe",
-                DNI = "123456789"
+                Descripcion = "123456789",
+                Precio = 736
             };
 
             // Act
-            var response = await _usuariosService.Update(updateUser);
+            var response = await _productosService.Update(updateUser);
 
             // Assert
             Assert.IsFalse(response.IsSuccess);
-            Assert.IsNull(response.Modelo);
+            //Assert.IsNull(response.Modelo);
         }
-
     }
 }

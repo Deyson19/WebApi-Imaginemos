@@ -12,9 +12,13 @@ namespace WebApi_Imaginemos.Services.Implementation
         private readonly ImaginemosDbContext _dbContext = dbContext;
         public async Task<ResponseDto<Producto>> Add(Producto modelo)
         {
-            await _dbContext.Producto.AddAsync(modelo);
-            await _dbContext.SaveChangesAsync();
-            return new ResponseDto<Producto> { IsSuccess = modelo != null, Modelo = modelo };
+            if (modelo.Nombre != null && modelo.Precio != null)
+            {
+                await _dbContext.Producto.AddAsync(modelo);
+                await _dbContext.SaveChangesAsync();
+                return new ResponseDto<Producto> { IsSuccess = true, Modelo = modelo };
+            }
+            return new ResponseDto<Producto> { IsSuccess = false, Modelo = modelo };
         }
 
         public async Task<ResponseDto<bool>> Delete(int id)
