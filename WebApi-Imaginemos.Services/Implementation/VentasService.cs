@@ -14,7 +14,22 @@ namespace WebApi_Imaginemos.Services.Implementation
         Usuario currentUser = new();
         public async Task<ResponseDto<VentaDetalleUsuario>> Add(RegistrarVenta newSale)
         {
-
+            if (newSale.Usuario is null && newSale.DNI is null && newSale.Productos.Count() == 0)
+            {
+                return new ResponseDto<VentaDetalleUsuario>
+                {
+                    IsSuccess = false,
+                    Modelo = new VentaDetalleUsuario
+                    {
+                        Id = 0,
+                        VentaDetalleId = [0],
+                        UsuarioId = currentUser.Id,
+                        NombreUsuario = newSale.Usuario,
+                        Fecha = DateTime.Now,
+                        Total = 0
+                    }
+                };
+            }
             //crear objetos para asignar luego de guardar los datos y armar posteriormente la respuesta
             var detalleVenta = new DetalleVenta();
             var ventaUnica = new Venta();
@@ -71,7 +86,7 @@ namespace WebApi_Imaginemos.Services.Implementation
             }
             SaveDetailsSale(listaDetalleVenta);
             var x = _dbContext.Venta.Include(x => x.DetalleVentas).Where(x => x.Id == ventaUnica.Id);
-            var totalSum = x.FirstOrDefault().DetalleVentas.Sum(z => z.PrecioUnitario * z.Cantidad) ;
+            var totalSum = x.FirstOrDefault().DetalleVentas.Sum(z => z.PrecioUnitario * z.Cantidad);
             ventaUnica.Total = totalSum;
             _dbContext.Venta.Update(ventaUnica);
             await _dbContext.SaveChangesAsync();
@@ -86,19 +101,22 @@ namespace WebApi_Imaginemos.Services.Implementation
                     UsuarioId = currentUser.Id,
                     NombreUsuario = newSale.Usuario,
                     Fecha = DateTime.Now,
-                    Total = x.FirstOrDefault().DetalleVentas.Sum(z=>z.PrecioUnitario * z.Cantidad),
+                    Total = x.FirstOrDefault().DetalleVentas.Sum(z => z.PrecioUnitario * z.Cantidad),
                 }
             };
         }
 
         public async Task<ResponseDto<bool>> Delete(int id)
         {
-            var findSale = await GetSale(id);
-            if (findSale != null)
+            if (id != 0)
             {
-                _dbContext.Venta.Remove(findSale);
-                await _dbContext.SaveChangesAsync();
-                return new ResponseDto<bool> { IsSuccess = true, Modelo = true };
+                var findSale = await GetSale(id);
+                if (findSale != null)
+                {
+                    _dbContext.Venta.Remove(findSale);
+                    await _dbContext.SaveChangesAsync();
+                    return new ResponseDto<bool> { IsSuccess = true, Modelo = true };
+                }
             }
             return new ResponseDto<bool>
             {
@@ -116,49 +134,69 @@ namespace WebApi_Imaginemos.Services.Implementation
 
         public async Task<ResponseDto<Venta>> GetById(int id)
         {
-            var findSale = await GetSale(id);
-            return new ResponseDto<Venta>
+            if (id != 0)
             {
-                IsSuccess = findSale != null,
-                Modelo = findSale
-            };
-        }
-
-        public async Task<ResponseDto<List<Venta>>> Search(DateTime initialDate, DateTime endDate, string name, string dni)
-        {
-            var searchSale = await _dbContext.Venta.Include(z => z.Usuario).Where(
-                x => x.Fecha >= initialDate && x.Fecha <= endDate
-                || x.Usuario.Nombre.ToLower().Contains(name.ToLower()) || x.Usuario.DNI.ToLower().Contains(dni.ToLower())
-                ).ToListAsync();
-            return new ResponseDto<List<Venta>>
-            {
-                IsSuccess = searchSale != null,
-                Modelo = searchSale!
-            };
-        }
-
-        public async Task<ResponseDto<Venta>> Update(VentaUsuarioDto updateSale)
-        {
-            var findSale = await GetSale(updateSale.Id);
-            if (findSale != null)
-            {
-                findSale.Total = updateSale.Total;
-                findSale.UsuarioId = updateSale.UsuarioId;
-                findSale.Fecha = updateSale.Fecha;
-
-                _dbContext.Venta.Update(findSale);
-                await _dbContext.SaveChangesAsync();
-
+                var findSale = await GetSale(id);
                 return new ResponseDto<Venta>
                 {
-                    IsSuccess = true,
+                    IsSuccess = findSale != null,
                     Modelo = findSale
                 };
             }
             return new ResponseDto<Venta>
             {
                 IsSuccess = false,
-                Modelo = findSale
+                Modelo = null
+            };
+
+        }
+
+        public async Task<ResponseDto<List<Venta>>> Search(DateTime initialDate, DateTime endDate, string name, string dni)
+        {
+            if (name != null || dni != null)
+            {
+                var searchSale = await _dbContext.Venta.Include(z => z.Usuario).Where(
+                                x => x.Fecha >= initialDate && x.Fecha <= endDate
+                                || x.Usuario.Nombre.ToLower().Contains(name.ToLower()) || x.Usuario.DNI.ToLower().Contains(dni.ToLower())
+                                ).ToListAsync();
+                return new ResponseDto<List<Venta>>
+                {
+                    IsSuccess = searchSale.Any(),
+                    Modelo = searchSale
+                };
+            }
+            return new ResponseDto<List<Venta>>
+            {
+                IsSuccess = false,
+                Modelo = new List<Venta>()
+            };
+        }
+
+        public async Task<ResponseDto<Venta>> Update(VentaUsuarioDto updateSale)
+        {
+            if (updateSale.Id != 0)
+            {
+                var findSale = await GetSale(updateSale.Id);
+                if (findSale != null)
+                {
+                    findSale.Total = updateSale.Total;
+                    findSale.UsuarioId = updateSale.UsuarioId;
+                    findSale.Fecha = updateSale.Fecha;
+
+                    _dbContext.Venta.Update(findSale);
+                    await _dbContext.SaveChangesAsync();
+
+                    return new ResponseDto<Venta>
+                    {
+                        IsSuccess = true,
+                        Modelo = findSale
+                    };
+                }
+            }
+            return new ResponseDto<Venta>
+            {
+                IsSuccess = false,
+                Modelo = null
             };
         }
 
