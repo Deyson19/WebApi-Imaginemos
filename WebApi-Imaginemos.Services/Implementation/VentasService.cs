@@ -85,6 +85,7 @@ namespace WebApi_Imaginemos.Services.Implementation
 
             }
             SaveDetailsSale(listaDetalleVenta);
+            //manejo de la colección para acceder a los precios y total para el detalle de venta y la venta en si misma
             var x = _dbContext.Venta.Include(x => x.DetalleVentas).Where(x => x.Id == ventaUnica.Id);
             var totalSum = x.FirstOrDefault().DetalleVentas.Sum(z => z.PrecioUnitario * z.Cantidad);
             ventaUnica.Total = totalSum;
@@ -97,7 +98,7 @@ namespace WebApi_Imaginemos.Services.Implementation
                 Modelo = new VentaDetalleUsuario
                 {
                     Id = ventaUnica.Id,
-                    VentaDetalleId = x.FirstOrDefault().DetalleVentas.Where(x=>x.VentaId ==ventaUnica.Id).Select(x=>x.Id).ToArray(),
+                    VentaDetalleId = x.FirstOrDefault().DetalleVentas.Where(x => x.VentaId == ventaUnica.Id).Select(x => x.Id).ToArray(),
                     UsuarioId = currentUser.Id,
                     NombreUsuario = newSale.Usuario,
                     Fecha = DateTime.Now,
@@ -127,8 +128,8 @@ namespace WebApi_Imaginemos.Services.Implementation
 
         public async Task<ResponseDto<IEnumerable<Venta>>> GetAll()
         {
-            var sales = await _dbContext.Venta.Include(x=>x.Usuario).ToListAsync();
-            
+            var sales = await _dbContext.Venta.Include(x => x.Usuario).ToListAsync();
+
 
             return new ResponseDto<IEnumerable<Venta>> { IsSuccess = sales.Any(), Modelo = sales };
         }
