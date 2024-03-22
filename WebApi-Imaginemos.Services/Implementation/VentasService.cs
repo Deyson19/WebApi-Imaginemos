@@ -97,7 +97,7 @@ namespace WebApi_Imaginemos.Services.Implementation
                 Modelo = new VentaDetalleUsuario
                 {
                     Id = ventaUnica.Id,
-                    //VentaDetalleId = x.FirstOrDefault().DetalleVentas.,
+                    VentaDetalleId = x.FirstOrDefault().DetalleVentas.Where(x=>x.VentaId ==ventaUnica.Id).Select(x=>x.Id).ToArray(),
                     UsuarioId = currentUser.Id,
                     NombreUsuario = newSale.Usuario,
                     Fecha = DateTime.Now,
