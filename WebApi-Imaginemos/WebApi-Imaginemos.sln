@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApi-Imaginemos.Entities"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApi-Imaginemos.Services", "..\WebApi-Imaginemos.Services\WebApi-Imaginemos.Services.csproj", "{64EF32E0-747F-471A-9AA3-BA775C860012}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApi-Imaginemos.DTOs", "..\WebApi-Imaginemos-DTOs\WebApi-Imaginemos.DTOs.csproj", "{6D5043DB-B4AB-47E8-806F-9373CD7BAC6F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApi-Imaginemos.DTOs", "..\WebApi-Imaginemos-DTOs\WebApi-Imaginemos.DTOs.csproj", "{6D5043DB-B4AB-47E8-806F-9373CD7BAC6F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApi-Imaginemos.TestServices", "..\WebApi-Imaginemos.TestServices\WebApi-Imaginemos.TestServices.csproj", "{5A74DB0E-6BCB-4F6B-B78C-DA1BD41CFE27}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{6D5043DB-B4AB-47E8-806F-9373CD7BAC6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6D5043DB-B4AB-47E8-806F-9373CD7BAC6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6D5043DB-B4AB-47E8-806F-9373CD7BAC6F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A74DB0E-6BCB-4F6B-B78C-DA1BD41CFE27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A74DB0E-6BCB-4F6B-B78C-DA1BD41CFE27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A74DB0E-6BCB-4F6B-B78C-DA1BD41CFE27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A74DB0E-6BCB-4F6B-B78C-DA1BD41CFE27}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

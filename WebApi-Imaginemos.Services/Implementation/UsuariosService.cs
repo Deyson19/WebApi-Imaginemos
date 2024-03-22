@@ -13,11 +13,19 @@ namespace WebApi_Imaginemos.Services.Implementation
 
         public async Task<ResponseDto<Usuario>> Add(Usuario newUser)
         {
-            var addUser = await _dbContext.Usuario.AddAsync(newUser);
-            await _dbContext.SaveChangesAsync();
+            if (newUser.Nombre != null && newUser.DNI != null)
+            {
+                var addUser = await _dbContext.Usuario.AddAsync(newUser);
+                await _dbContext.SaveChangesAsync();
+                return new ResponseDto<Usuario>
+                {
+                    IsSuccess = addUser.Entity.Id != 0,
+                    Modelo = newUser
+                };
+            }
             return new ResponseDto<Usuario>
             {
-                IsSuccess = addUser.Entity.Id != 0,
+                IsSuccess = false,
                 Modelo = newUser
             };
         }
