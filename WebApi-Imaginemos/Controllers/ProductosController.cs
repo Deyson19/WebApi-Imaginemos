@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebApi_Imaginemos.Entities;
 using WebApi_Imaginemos.Services.Contract;
@@ -13,6 +12,7 @@ namespace WebApi_Imaginemos.Controllers
     {
         private readonly IProductosService _productosService = productoService;
         private readonly IMapper _mapper = mapper;
+        private readonly string baseUrl = "https://localhost:7167";
 
         [HttpGet]
         public async Task<IActionResult> GetProducts(string name)
@@ -25,6 +25,63 @@ namespace WebApi_Imaginemos.Controllers
             }
             return NoContent();
         }
+
+        [HttpGet("Pagination/{total}/{pages}")]
+        public async Task<IActionResult> GetPageOfProducts([FromRoute] int total, int pages)
+        {
+            if (total < 0 || pages <= 0)
+            {
+                return BadRequest("El total de paginas o el rango no pueden ser negativos");
+            }
+
+            var productos = await _productosService.GetAll();
+            var totalProductos = productos.Modelo.Count();
+
+            if (pages > totalProductos / total)
+            {
+                return BadRequest("La cantidad de paginas solicitada supera la cantidad real de elementos");
+            }
+
+            var saltarItems = pages * total;
+            var tomarItems = total;
+
+            if (saltarItems >= totalProductos)
+            {
+                return NotFound();
+            }
+            if (saltarItems + total > totalProductos)
+            {
+                tomarItems = totalProductos - saltarItems;
+            }
+
+            var paginationResult = productos.Modelo.Skip(saltarItems).Take(tomarItems).ToList();
+
+            var totalPaginas = (int)Math.Ceiling((double)totalProductos / total);
+
+            var links = new List<Link>();
+
+            for (int i = 1; i <= totalPaginas; i++)
+            {
+                Link link = new()
+                {
+                    Href = baseUrl+ Url.Action("GetPageOfProducts", new { total = total, pages = i }),
+                    Rel = i == pages ? "self" : "alternate",
+                    Title = $"Page: {i}"
+                };
+
+                links.Add(link);
+            }
+
+            var responsePagination = new
+            {
+                Total = totalProductos,
+                Items = paginationResult,
+                Links = links
+            };
+
+            return Ok(responsePagination);
+        }
+
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetProduct(int id)
         {
@@ -83,9 +140,9 @@ namespace WebApi_Imaginemos.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            if (id !=0)
+            if (id != 0)
             {
-                var deleteProducto =await _productosService.Delete(id);
+                var deleteProducto = await _productosService.Delete(id);
                 if (deleteProducto.IsSuccess)
                 {
                     return Ok(deleteProducto.Modelo);
