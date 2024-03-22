@@ -20,8 +20,6 @@ namespace WebApi_Imaginemos.Services.Implementation
             var ventaUnica = new Venta();
 
             decimal totalVentaResponse = 0;
-            //obtener todos los productos actuales para poder navegar hacia su precio
-            var productsList = await _dbContext.Producto.ToListAsync();
 
             //obtener usuario por el dni para evitar duplicidad
             var user = await _dbContext.Usuario.FirstOrDefaultAsync(x => x.DNI.ToLower() == newSale.DNI.ToLower());
@@ -46,50 +44,49 @@ namespace WebApi_Imaginemos.Services.Implementation
 
             }
             int productsCounter = newSale.Productos.Count();
-            
+            //asignar el id al usuario creado o existente
+            ventaUnica.UsuarioId = currentUser!.Id;
+            //guardar la venta realizada
+            ventaUnica.Total = 0;
+            ventaUnica = await SaveSale(ventaUnica);
+
+            var listaDetalleVenta = new List<DetalleVenta>();
             foreach (var items in newSale.Productos)
             {
-                var productSelected = productsList.Where(x => x.Id == items.ProductoId).SingleOrDefault();
+                var productSelected = _dbContext.Producto.Where(x => x.Id == items.ProductoId).SingleOrDefault();
                 decimal totalVenta = productSelected!.Precio * items.Cantidad;
-
-                //asignar el id al usuario creado o existente
-                ventaUnica.UsuarioId = currentUser!.Id;
-                //guardar la venta realizada
-                ventaUnica.Total = totalVenta;
-                ventaUnica = await SaveSale(ventaUnica);
-                
 
                 totalVentaResponse += ventaUnica.Total;
 
                 //guardar detalles de la venta
-                detalleVenta.ProductoId = productSelected.Id;
-                detalleVenta.PrecioUnitario = productSelected.Precio;
-                detalleVenta.Cantidad = items.Cantidad;
-                detalleVenta.VentaId = ventaUnica.Id;
-                detalleVenta.Total = ventaUnica.Total;
-                detalleVenta = await SaveDetailsSale(detalleVenta);
-
-                productsCounter--;
-                //restablecer el ventaUnica y limpiar los datos
-                if (productsCounter >=1)
+                listaDetalleVenta.Add(new DetalleVenta
                 {
-                    ventaUnica = new Venta();
-                    detalleVenta = new DetalleVenta();
-                }
-                
+                    ProductoId = productSelected.Id,
+                    PrecioUnitario = productSelected.Precio,
+                    Cantidad = items.Cantidad,
+                    VentaId = ventaUnica.Id,
+                    Total = totalVenta,
+                });
+
             }
+            SaveDetailsSale(listaDetalleVenta);
+            var x = _dbContext.Venta.Include(x => x.DetalleVentas).Where(x => x.Id == ventaUnica.Id);
+            var totalSum = x.FirstOrDefault().DetalleVentas.Sum(z => z.PrecioUnitario * z.Cantidad) ;
+            ventaUnica.Total = totalSum;
+            _dbContext.Venta.Update(ventaUnica);
+            await _dbContext.SaveChangesAsync();
 
             return new ResponseDto<VentaDetalleUsuario>
             {
                 IsSuccess = true,
                 Modelo = new VentaDetalleUsuario
                 {
-                    Id = detalleVenta.Id,
-                    VentaDetalleId = detalleVenta.Id,
+                    Id = ventaUnica.Id,
+                    //VentaDetalleId = x.FirstOrDefault().DetalleVentas.,
                     UsuarioId = currentUser.Id,
                     NombreUsuario = newSale.Usuario,
                     Fecha = DateTime.Now,
-                    Total = totalVentaResponse,
+                    Total = x.FirstOrDefault().DetalleVentas.Sum(z=>z.PrecioUnitario * z.Cantidad),
                 }
             };
         }
@@ -178,12 +175,11 @@ namespace WebApi_Imaginemos.Services.Implementation
             return newItem.Entity;
         }
 
-        private async Task<DetalleVenta> SaveDetailsSale(DetalleVenta detalleVenta)
+        private void SaveDetailsSale(List<DetalleVenta> detalleVenta)
         {
-            var newItem = await _dbContext.DetalleDeVenta.AddAsync(detalleVenta);
-            await _dbContext.SaveChangesAsync();
+            _dbContext.DetalleDeVenta.AddRange(detalleVenta);
+            _dbContext.SaveChanges();
 
-            return newItem.Entity;
         }
     }
 }
