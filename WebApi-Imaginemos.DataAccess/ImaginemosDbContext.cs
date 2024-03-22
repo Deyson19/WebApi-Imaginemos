@@ -10,7 +10,12 @@ namespace WebApi_Imaginemos.DataAccess
         {
             
         }
+        string connectionString = "Host=localhost; Database=WebApi-Imaginemos; Username=postgres; Password=deyson.dev";
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseNpgsql(connectionString);
+        }
         public virtual DbSet<Producto> Producto { get; set; }
         public virtual DbSet<Venta> Venta { get; set; }
         public virtual DbSet<DetalleVenta> DetalleDeVenta { get; set; }
